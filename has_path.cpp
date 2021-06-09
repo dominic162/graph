@@ -18,6 +18,7 @@ class Graph{
                 int v1,v2;
                 cin>>v1>>v2;
                 adj_mat[v1][v2] = true;
+                adj_mat[v2][v1] = true;
             }
 
         }
