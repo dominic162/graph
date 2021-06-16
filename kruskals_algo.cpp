@@ -22,35 +22,85 @@ class Graph{
     private:
         int V,E;
 
-        Edge * edge;
+        Edge * edges_list;
     
     public:
 
         void add_edge(int v1 , int v2 , int w , int i){
-            edge[i].u = v1;
-            edge[i].v = v2;
-            edge[i].wt = w;
+            edges_list[i].u = v1;
+            edges_list[i].v = v2;
+            edges_list[i].wt = w;
+
+            return ;
+        }
+
+        int find_rep(int x , int * par){
+            if(par[x] == x){
+                return x;
+            }
+
+            par[x] = find_rep(par[x] , par);            
+
+            return par[x];
+
+        }
+
+        void do_union(int x , int y , int * par , int * rank){
+            int x_rep = find_rep(x , par);
+            int y_rep = find_rep(y , par);
+
+            if(rank[x_rep] > rank[y_rep]){
+                par[y_rep] = x_rep;
+            }
+            else{
+                if(rank[x_rep] < rank[y_rep]){
+                    par[x_rep] = y_rep;
+                }
+                else{
+                    par[x_rep] = y_rep;
+                    rank[y_rep]++;
+                }
+            }
 
             return ;
         }
 
         Edge * find_mst(){
-            sort(edge , edge + E);
+            sort(edges_list , edges_list + E , comp);
             Edge * mst = new Edge [V-1];
 
             int * par = new int [V];
+            int * rank = new int [V];
 
             for(int i = 0 ; i < V ; ++i){
-                par[i] = i;
+                par[i]  = i;
+                rank[i] = 0;
+            }
+
+            int i = 0 , j = 0;
+
+            while(i < V-1){
+
+                Edge &e = edges_list[j];
+                int v1_rep = find_rep(e.u , par);
+                int v2_rep = find_rep(e.v , par);
+
+                if(v1_rep != v2_rep){
+                    mst[i++] = e;
+                    do_union(e.u , e.v , par , rank);
+                }
+
+                ++j;
             }
 
              
-
-
+            delete []par;
+            delete []rank;
+            return mst;
         }
 
         Graph(int v , int e): V(v), E(e){
-            edge = new Edge [E];
+            edges_list = new Edge [E];
         }
 
 };
@@ -74,5 +124,11 @@ int main(){
 
     Edge * mst = g1.find_mst();
 
+    cout<<"Edges in Minimum spanning tree and their weight: ";
+    for(int i = 0 ; i < v-1 ; ++i){
+        cout<<mst[i].u<<" "<<mst[i].v<<" "<<mst[i].wt<<endl;
+    }
+
+    delete []mst;
     return 0;
 }
