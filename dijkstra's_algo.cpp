@@ -9,7 +9,21 @@
 #include<climits>
 using namespace std;
 
+class Node{
+    public:
+        int dist;
+        int cnode;
+};
 
+class Comp{
+    public:
+        bool operator()(const Node &a , const Node &b){
+            if(a.dist <= b.dist){
+                return true;
+            }
+            return false;
+        }
+};
 
 class Graph{
     private:
@@ -59,6 +73,58 @@ class Graph{
 
         }
 
+
+        int djk2(int sr , int ds){
+
+            vector<int> dist(V,INT_MAX);
+            dist[sr] = 0;
+
+            set<pair<int , int > > st;
+            
+
+            for(int i = 0 ; i < V ; ++i){
+                pair<int , int > p1{dist[i] , i};
+                st.insert(p1);
+            }
+
+            while(!st.empty()){
+
+                auto it = st.begin();
+
+                int cdist = dist[it->second];
+                int cnode = it->second;
+                st.erase(it);
+
+                for(auto it1 = adj[cnode].begin() ; it1 != adj[cnode].end() ; ++it1){
+                    
+                    pair<int ,int > p1{dist[it1->first] , it1->first};
+
+
+                    auto f = st.find(p1);
+                    if(f != st.end()){
+
+                        if(cdist + it1->second < dist[it1->first]){
+
+                            st.erase(f);
+                            p1.first = cdist + it1->second;
+                            dist[it1->first] = p1.first;
+                            st.insert(p1);
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+            for(int i = 0 ; i < V ; ++i){
+                cout<<i<<" "<<dist[i]<<endl;
+            }
+
+            return dist[ds];
+        }
+
         void add_edge(int u , int v , int wt){
             adj[u].push_back({v , wt});
             adj[v].push_back({u , wt});
@@ -93,7 +159,11 @@ int main(){
     cin>>sr>>dst;
     
     int distance = g1.djk_algo(sr,dst);
+    cout<<"Minimum distance between "<<sr<<" and "<<dst<<" is "<<distance<<endl;
+
+    distance = g1.djk2(sr,dst);
     cout<<"Minimum distance between "<<sr<<" and "<<dst<<" is "<<distance;
+
 
     return 0;
 }
